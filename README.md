@@ -46,31 +46,17 @@ Originally created because of https://graphql-code-generator.com/.
 
     $ npm install graphql-tag-pluck
 
-Once installed you can pluck GraphQL template literals using the `pluckFromFile` method:
+Once installed you can pluck GraphQL template literals like so:
 
 ```js
-import pluck, { pluckFromFile } from 'graphql-tag-pluck'
-
-assert(pluck.fromFile === pluckFromFile)
+import gqlPluck from 'graphql-tag-pluck'
 
 export default async (filePath) => {
-  await pluckFromFile(filePath)
+  await gqlPluck(filePath)
 }
 ```
 
-Or using the `pluckFromCodeString` method:
-
-```js
-import pluck, { pluckFromCodeString } from 'graphql-tag-pluck'
-
-assert(pluck.fromCodeString === pluckFromCodeString)
-
-export default async (codeString) => {
-  await pluckFromCodeString(codeString)
-}
-```
-
-It's preferable to use the `pluckFromFile` method since it should take the relative `.babelrc` file into account
+supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.graphql`, `.gql`.
 
 ### License
 
