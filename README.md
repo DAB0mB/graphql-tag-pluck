@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/DAB0mB/graphql-tag-pluck/tree/master.svg?style=svg)](https://circleci.com/gh/DAB0mB/graphql-tag-pluck/tree/master)
+
 # GraphQL Tag Pluck
 
 `graphql-tag-pluck` will take JavaScript code as an input and will pluck all template literals provided to `graphql-tag`.
