@@ -1,11 +1,16 @@
-import { transformFileAsync } from '@babel/core'
+import {
+  transformFileAsync,
+  transformAsync,
+  transformFileSync,
+  transformSync,
+} from '@babel/core'
 import { resolve, extname } from 'path'
 import fs from './libs/fs'
 import plugin from './plugin'
 import { merge } from './utils'
 
 const gqlExtensions = [
-  '.graphql', '.gql'
+  '.graphqls', '.graphql', '.gql'
 ]
 
 const jsExtensions = [
@@ -18,7 +23,7 @@ supportedExtensions.toString = function toString() {
   return this.split().join(', ')
 }
 
-export default  async (filePath, customConfig = {}) => {
+export const gqlPluckFromFile = (filePath, customConfig = {}) => {
   if (typeof filePath != 'string' && !(filePath instanceof String)) {
     throw TypeError('Provided file path must be a string')
   }
@@ -37,21 +42,76 @@ export default  async (filePath, customConfig = {}) => {
     throw TypeError(`Provided config must be an object`)
   }
 
+
   filePath = resolve(process.cwd(), filePath)
 
-  const { gqlString } = (await transformFileAsync(
-    filePath,
-    createConfig(customConfig),
-  )).metadata
+  customConfig = createConfig(customConfig)
+  const sync = customConfig.sync
+  delete customConfig.sync
 
-  return gqlString
+  if (sync) {
+    return transformFileSync(
+      filePath,
+      customConfig,
+    ).metadata.gqlString
+  }
+  else {
+    return transformFileAsync(
+      filePath,
+      customConfig,
+    ).then(({ metadata }) => metadata.gqlString)
+  }
 }
 
-const createConfig = (customConfig) => {
+gqlPluckFromFile.sync = (filePath, customConfig = {}) => {
+  customConfig = { ...customConfig, sync: true }
+
+  return gqlPluckFromFile(filePath, customConfig)
+}
+
+export const gqlPluckFromCodeString = (codeString, customConfig = {}) => {
+  if (typeof codeString != 'string' && !(codeString instanceof String)) {
+    throw TypeError('Provided code must be a string')
+  }
+
+  if (!(customConfig instanceof Object)) {
+    throw TypeError(`Provided config must be an object`)
+  }
+
+  customConfig = createConfig({ filename: '.tsx', babelrc: false }, customConfig)
+  const sync = customConfig.sync
+  delete customConfig.sync
+
+  if (sync) {
+    return transformSync(
+      codeString,
+      customConfig,
+    ).metadata.gqlString
+  }
+  else {
+    return transformAsync(
+      codeString,
+      customConfig,
+    ).then(({ metadata }) => metadata.gqlString)
+  }
+}
+
+gqlPluckFromCodeString.sync = (codeString, customConfig = {}) => {
+  customConfig = { ...customConfig, sync: true }
+
+  return gqlPluckFromCodeString(codeString, customConfig)
+}
+
+const createConfig = (...customConfigs) => {
   return merge({
     plugins: [plugin],
     presets: ['@babel/typescript'],
     code: false,
     ast: false,
-  }, customConfig)
+  }, ...customConfigs)
+}
+
+export default {
+  fromFile: gqlPluckFromFile,
+  fromCodeString: gqlPluckFromCodeString,
 }
