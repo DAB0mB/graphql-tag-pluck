@@ -1,6 +1,6 @@
 {
   "name": "graphql-tag-pluck",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Pluck graphql-tag template literals",
   "main": "build/graphql-tag-pluck.js",
   "scripts": {
