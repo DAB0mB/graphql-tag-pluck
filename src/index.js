@@ -108,31 +108,31 @@ const createConfig = (...customConfigs) => {
       pluckPlugin,
 
       // Stage 0
-      '@babel/plugin-proposal-function-bind',
+      require('@babel/plugin-proposal-function-bind'),
 
       // Stage 1
-      '@babel/plugin-proposal-export-default-from',
-      '@babel/plugin-proposal-logical-assignment-operators',
-      ['@babel/plugin-proposal-optional-chaining', { 'loose': true }],
-      ['@babel/plugin-proposal-pipeline-operator', { 'proposal': 'minimal' }],
-      ['@babel/plugin-proposal-nullish-coalescing-operator', { 'loose': true }],
-      '@babel/plugin-proposal-do-expressions',
+      require('@babel/plugin-proposal-export-default-from'),
+      require('@babel/plugin-proposal-logical-assignment-operators'),
+      [require('@babel/plugin-proposal-optional-chaining'), { 'loose': true }],
+      [require('@babel/plugin-proposal-pipeline-operator'), { 'proposal': 'minimal' }],
+      [require('@babel/plugin-proposal-nullish-coalescing-operator'), { 'loose': true }],
+      require('@babel/plugin-proposal-do-expressions'),
 
       // Stage 2
-      ['@babel/plugin-proposal-decorators', { 'legacy': true }],
-      '@babel/plugin-proposal-function-sent',
-      '@babel/plugin-proposal-export-namespace-from',
-      '@babel/plugin-proposal-numeric-separator',
-      '@babel/plugin-proposal-throw-expressions',
+      [require('@babel/plugin-proposal-decorators'), { 'legacy': true }],
+      require('@babel/plugin-proposal-function-sent'),
+      require('@babel/plugin-proposal-export-namespace-from'),
+      require('@babel/plugin-proposal-numeric-separator'),
+      require('@babel/plugin-proposal-throw-expressions'),
 
       // Stage 3
-      '@babel/plugin-syntax-dynamic-import',
-      '@babel/plugin-syntax-import-meta',
-      ['@babel/plugin-proposal-class-properties', { 'loose': true }],
-      '@babel/plugin-proposal-json-strings',
+      require('@babel/plugin-syntax-dynamic-import'),
+      require('@babel/plugin-syntax-import-meta'),
+      [require('@babel/plugin-proposal-class-properties'), { 'loose': true }],
+      require('@babel/plugin-proposal-json-strings'),
     ],
     presets: [
-      '@babel/typescript',
+      require('@babel/preset-typescript'),
     ],
     code: false,
     ast: false,
