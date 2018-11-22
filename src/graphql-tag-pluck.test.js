@@ -13,11 +13,11 @@ describe('graphql-tag-pluck', () => {
     await fs.writeFile(file.name, freeText(`
       import gql from 'graphql-tag'
 
-      const fragment = gql\`
+      const fragment = gql(\`
         fragment Foo on FooType {
           id
         }
-      \`
+      \`)
 
       const doc = gql\`
         query foo {
@@ -124,11 +124,11 @@ describe('graphql-tag-pluck', () => {
     const gqlString = await gqlPluck.fromCodeString(freeText(`
       import gql from 'graphql-tag'
 
-      const fragment = gql\`
+      const fragment = gql(\`
         fragment Foo on FooType {
           id
         }
-      \`
+      \`)
 
       const doc = gql\`
         query foo {
@@ -163,11 +163,11 @@ describe('graphql-tag-pluck', () => {
     await fs.writeFile(file.name, freeText(`
       import gql from 'graphql-tag'
 
-      const fragment = gql\`
+      const fragment = gql(\`
         fragment Foo on FooType {
           id
         }
-      \`
+      \`)
 
       const doc = gql\`
         query foo {
@@ -199,11 +199,11 @@ describe('graphql-tag-pluck', () => {
     const gqlString = gqlPluck.fromCodeString.sync(freeText(`
       import gql from 'graphql-tag'
 
-      const fragment = gql\`
+      const fragment = gql(\`
         fragment Foo on FooType {
           id
         }
-      \`
+      \`)
 
       const doc = gql\`
         query foo {

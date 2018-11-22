@@ -5,6 +5,16 @@ export default ({ types: t }) => {
     pre() {
       // Will accumulate all template literals
       this.gqlTemplateLiterals = []
+
+      this.pluckStringFromFile = ({ start, end }) => {
+        return freeText(this.file.code
+          // Slice quotes
+          .slice(start + 1, end - 1)
+          // Erase string interpolations as we gonna export everything as a single
+          // string anyways
+          .replace(/\$\{[^}]*\}/, '')
+        )
+      }
     },
 
     visitor: {
@@ -12,15 +22,34 @@ export default ({ types: t }) => {
         enter(path) {
           // Find the identifier name used from graphql-tag, commonJS
           // e.g. import gql from 'graphql-tag' -> gql
-          if (!t.isCallExpression(path.node, {
-            'callee.name': 'require',
-            'arguments[0].value': 'graphql-tag',
-          })) return
+          if (
+            path.node.callee.name == 'require' &&
+            path.node.arguments[0].value == 'graphql-tag'
+          ) {
+            if (!t.isVariableDeclarator(path.parent)) return
+            if (!t.isIdentifier(path.parent.id)) return
 
-          if (!t.isVariableDeclarator(path.parent)) return
-          if (!t.isIdentifier(path.parent.id)) return
+            this.gqlIdentifierName = path.parent.id.name
 
-          this.gqlIdentifierName = path.parent.id.name
+            return
+          }
+
+          const arg0 = path.node.arguments[0]
+
+          // Push strings template literals to gql calls
+          // e.g. gql(`query myQuery {}`) -> query myQuery {}
+          if (
+            path.node.callee.name == this.gqlIdentifierName &&
+            t.isTemplateLiteral(arg0)
+          ) {
+            const gqlTemplateLiteral = this.pluckStringFromFile(arg0)
+
+            // If the entire template was made out of interpolations it should be an empty
+            // string by now and thus should be ignored
+            if (gqlTemplateLiteral) {
+              this.gqlTemplateLiterals.push(gqlTemplateLiteral)
+            }
+          }
         },
       },
 
@@ -46,16 +75,8 @@ export default ({ types: t }) => {
           // e.g. gql `query myQuery {}` -> query myQuery {}
           if (path.node.tag.name != this.gqlIdentifierName) return
 
-          const gqlTemplateLiteral = freeText(path.hub.getCode().slice(
-            path.node.quasi.start + 1,
-            path.node.quasi.end - 1,
-          )
-          // Erase string interpolations as we gonna export everything as a single
-          // string anyways
-          .replace(/\$\{[^}]*\}/, ''))
+          const gqlTemplateLiteral = this.pluckStringFromFile(path.node.quasi)
 
-          // If the entire template was made out of interpolations it should be an empty
-          // string by now and thus should be ignored
           if (gqlTemplateLiteral) {
             this.gqlTemplateLiterals.push(gqlTemplateLiteral)
           }
