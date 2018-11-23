@@ -27,7 +27,8 @@
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/plugin-syntax-import-meta": "^7.0.0",
     "@babel/preset-typescript": "^7.1.0",
-    "lodash.mergewith": "^4.6.1"
+    "lodash.mergewith": "^4.6.1",
+    "source-map-support": "^0.5.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.0.0",
