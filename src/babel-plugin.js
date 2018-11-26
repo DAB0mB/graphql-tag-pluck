@@ -5,6 +5,8 @@ export default ({ types: t }) => {
     pre() {
       // Will accumulate all template literals
       this.gqlTemplateLiterals = []
+      // By default, we will look for `gql` calls
+      this.gqlIdentifierName = 'gql'
 
       this.pluckStringFromFile = ({ start, end }) => {
         return freeText(this.file.code

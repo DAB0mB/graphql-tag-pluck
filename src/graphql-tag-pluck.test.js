@@ -87,32 +87,112 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
-  ;['js', 'ts'].forEach(ext => {
-    it(`should NOT pluck other template literals from a .${ext} file`, async () => {
-      const file = await tmp.file({
-        unsafeCleanup: true,
-        template: `/tmp/tmp-XXXXXX.${ext}`,
-      })
-
-      await fs.writeFile(file.name, freeText(`
-        test(
-          \`test1\`
-        )
-        test.test(
-          \`test2\`
-        )
-        test\`
-          test3
-        \`
-        test.test\`
-          test4
-        \`
-      `))
-
-      const gqlString = await gqlPluck.fromFile(file.name)
-
-      expect(gqlString).toEqual('')
+  it(`should NOT pluck other template literals from a .js file`, async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: `/tmp/tmp-XXXXXX.js`,
     })
+
+    await fs.writeFile(file.name, freeText(`
+      test(
+        \`test1\`
+      )
+      test.test(
+        \`test2\`
+      )
+      test\`
+        test3
+      \`
+      test.test\`
+        test4
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual('')
+  })
+
+  it ('should pluck template literals when graphql-tag is imported differently', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import graphqltag from 'graphql-tag'
+
+      const fragment = graphqltag(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = graphqltag\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
+
+  it ('should pluck template literals from gql by default even if not imported from graphql-tag', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import gql from 'graphql-tag'
+
+      const fragment = gql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = gql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
   })
 
   it('should pluck graphql-tag template literals from .graphql file', async () => {
