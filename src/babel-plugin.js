@@ -39,6 +39,7 @@ export default ({ types: t }) => {
           // Push strings template literals to gql calls
           // e.g. gql(`query myQuery {}`) -> query myQuery {}
           if (
+            t.isIdentifier(path.node.callee) &&
             path.node.callee.name == this.gqlIdentifierName &&
             t.isTemplateLiteral(arg0)
           ) {
@@ -73,7 +74,12 @@ export default ({ types: t }) => {
         exit(path) {
           // Push all template literals provided to the found identifier name
           // e.g. gql `query myQuery {}` -> query myQuery {}
-          if (path.node.tag.name != this.gqlIdentifierName) return
+          if (
+            !t.isIdentifier(path.node.tag) ||
+            path.node.tag.name != this.gqlIdentifierName
+          ) {
+            return
+          }
 
           const gqlTemplateLiteral = this.pluckStringFromFile(path.node.quasi)
 
