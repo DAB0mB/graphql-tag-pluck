@@ -2,6 +2,8 @@
   "name": "graphql-tag-pluck",
   "version": "0.2.2",
   "description": "Pluck graphql-tag template literals",
+  "license": "MIT",
+  "repository": "DAB0mB/graphql-tag-pluck",
   "main": "build/graphql-tag-pluck.js",
   "scripts": {
     "build": "webpack --config webpack_config.js",
