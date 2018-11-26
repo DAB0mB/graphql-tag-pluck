@@ -87,6 +87,34 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  ;['js', 'ts'].forEach(ext => {
+    it(`shouldn\'t pluck other template literals from a .${ext} file`, async () => {
+      const file = await tmp.file({
+        unsafeCleanup: true,
+        template: `/tmp/tmp-XXXXXX.${ext}`,
+      })
+
+      await fs.writeFile(file.name, freeText(`
+        test(
+          \`test1\`
+        );
+        test.test(
+          \`test2\`
+        );
+        test\`
+          test3
+        \`
+        test.test\`
+          test4
+        \`
+      `))
+
+      const gqlString = await gqlPluck.fromFile(file.name)
+
+      expect(gqlString).toEqual('')
+    })
+  })
+
   it('should pluck graphql-tag template literals from .graphql file', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
