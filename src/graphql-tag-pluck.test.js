@@ -45,6 +45,59 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  it('should pluck graphql-tag template literals from .js file and remove replacements', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import gql from 'graphql-tag'
+
+      const fragment = gql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+      const fragment2 = gql(\`
+        fragment Foo2 on FooType {
+          name
+        }
+      \`)
+
+      const doc = gql\`
+        query foo {
+          foo {
+            ...Foo
+            ...Foo2
+          }
+        }
+
+        \${fragment}
+        \${fragment2}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      fragment Foo2 on FooType {
+        name
+      }
+
+      query foo {
+        foo {
+          ...Foo
+          ...Foo2
+        }
+      }
+    `))
+  })
+
   it('should pluck graphql-tag template literals from .ts file', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,

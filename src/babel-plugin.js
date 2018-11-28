@@ -14,7 +14,7 @@ export default ({ types: t }) => {
           .slice(start + 1, end - 1)
           // Erase string interpolations as we gonna export everything as a single
           // string anyways
-          .replace(/\$\{[^}]*\}/, '')
+          .replace(/\$\{[^}]*\}/g, '')
         )
       }
     },
