@@ -140,6 +140,76 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  it('should pluck graphql-tag template literals from .ts file (with TS features)', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXXX.ts',
+    })
+
+    const code = `
+    import gql from 'graphql-tag'
+    import { Document } from 'graphql'
+
+    interface ModuleWithProviders {
+      ngModule: string;
+    }
+    
+    export class FooModule {
+      static forRoot() {
+        return <ModuleWithProviders>{
+          ngModule: 'foo'
+        };
+      }
+    }
+
+    const fragment: Document = gql\`
+      fragment Foo on FooType {
+        id
+      }
+    \`
+
+    const doc: Document = gql\`
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+
+      \${fragment}
+    \`
+  `;
+
+    await fs.writeFile(file.name, freeText(code))
+
+    const fromFile = await gqlPluck.fromFile(file.name)
+
+    expect(fromFile).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+
+    const fromString = await gqlPluck.fromCodeString(code)
+
+    expect(fromString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
+
   it(`should NOT pluck other template literals from a .js file`, async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
