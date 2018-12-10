@@ -109,6 +109,10 @@ describe('graphql-tag-pluck', () => {
       import { Document } from 'graphql'
 
       export namespace Fragments {
+        interface EmptyObject {}
+
+        const object = <EmptyObject> {}
+
         const fragment: Document = gql\`
           fragment Foo on FooType {
             id

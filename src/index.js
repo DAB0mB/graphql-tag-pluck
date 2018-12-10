@@ -1,7 +1,8 @@
 import { parse as babelParse } from '@babel/parser'
 import babelTraverse from '@babel/traverse'
-import { resolve, extname } from 'path'
+import Config from './config'
 import fs from './libs/fs'
+import { resolve, extname } from './libs/path'
 import createVisitor from './visitor'
 
 const gqlExtensions = [
@@ -9,7 +10,7 @@ const gqlExtensions = [
 ]
 
 const jsExtensions = [
-  '.js', '.jsx', '.ts', '.tsx', '.flow'
+  '.js', '.jsx', '.ts', '.tsx', '.flow', '.flow.js', '.flow.jsx'
 ]
 
 const supportedExtensions = [...gqlExtensions, ...jsExtensions]
@@ -77,34 +78,14 @@ export const gqlPluckFromCodeString = (codeString, options = {}) => {
     }
   }
 
+  const out = {}
   const config = new Config(options)
   const ast = babelParse(codeString, config)
-  const out = {}
   const visitor = createVisitor(codeString, out)
 
   babelTraverse(ast, visitor)
 
   return out.returnValue
-}
-
-function Config(options) {
-  if (options instanceof Config) {
-    return options
-  }
-
-  const plugins = ['jsx']
-
-  if (options.fileExt == '.flow') {
-    plugins.push('flow', 'flowComments')
-  }
-  else {
-    plugins.push('typescript')
-  }
-
-  Object.assign(this, {
-    sourceType: 'module',
-    plugins,
-  })
 }
 
 export default {

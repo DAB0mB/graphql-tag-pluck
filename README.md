@@ -63,11 +63,11 @@ gqlPluck.fromFile.sync(filePath)
 
 // Returns string
 gqlPluck.fromCodeString(codeString, {
-  fileExt: '.ts' // Optional, defaults to '.ts'
+  fileExt: '.ts' // Optional, defaults to '.js'
 })
 ```
 
-supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.graphqls`, `.graphql`, `.gqls`, `.gql`.
+supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`,  `.graphqls`, `.graphql`, `.gqls`, `.gql`.
 
 ### License
 
