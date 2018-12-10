@@ -53,14 +53,21 @@ Once installed you can pluck GraphQL template literals using one of the followin
 ```js
 import gqlPluck, { gqlPluckFromFile, gqlPluckFromCodeString } from 'graphql-tag-pluck'
 
-gqlPluck.fromFile(filePath, { sync: false, ...mergeBabelConfig })
-gqlPluck.fromFile.sync(filePath, mergeBabelConfig)
+// Returns promise
+gqlPluck.fromFile(filePath, {
+  useSync: true // Optional, will return string if so
+})
 
-gqlPluck.fromCodeString(codeString, { sync: false, ...mergeBabelConfig })
-gqlPluck.fromCodeString.sync(codeString, mergeBabelConfig)
+// Returns string
+gqlPluck.fromFile.sync(filePath)
+
+// Returns string
+gqlPluck.fromCodeString(codeString, {
+  fileExt: '.ts' // Optional, defaults to '.ts'
+})
 ```
 
-supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.graphqls`, `.graphql`, `.gql`.
+supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.graphqls`, `.graphql`, `.gqls`, `.gql`.
 
 ### License
 

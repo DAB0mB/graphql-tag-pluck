@@ -1,5 +1,3 @@
-import lodashMergeWith from 'lodash.mergewith'
-
 // Will use the shortest indention as an axis
 export const freeText = (text) => {
   if (text instanceof Array) {
@@ -52,13 +50,4 @@ export const toCamelCase = (str) => {
   const rest = words.map(toUpperFirst)
 
   return [first, ...rest].join('')
-}
-
-// Deep merge that concats arrays
-export const merge = (object, ...other) => {
-  return lodashMergeWith(object, ...other, (objValue, srcValue) => {
-    if (objValue instanceof Array) {
-      return objValue.concat(srcValue)
-    }
-  })
 }

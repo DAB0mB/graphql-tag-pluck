@@ -1,5 +1,8 @@
 import fs from 'fs'
 
+export const readFileSync = fs.readFileSync
+export const writeFileSync = fs.writeFileSync
+
 export const readFile = (...args) => {
   return new Promise((resolve, reject) => {
     fs.readFile(...args, (err, content) => {
@@ -28,5 +31,7 @@ export const writeFile = (...args) => {
 
 export default {
   readFile,
+  readFileSync,
   writeFile,
+  writeFileSync,
 }

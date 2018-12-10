@@ -108,6 +108,50 @@ describe('graphql-tag-pluck', () => {
       import gql from 'graphql-tag'
       import { Document } from 'graphql'
 
+      export namespace Fragments {
+        const fragment: Document = gql\`
+          fragment Foo on FooType {
+            id
+          }
+        \`
+
+        const doc: Document = gql\`
+          query foo {
+            foo {
+              ...Foo
+            }
+          }
+
+          \${fragment}
+        \`
+      }
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
+
+  it('should pluck graphql-tag template literals from .flow file', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.flow',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import gql from 'graphql-tag'
+      import { Document } from 'graphql'
+
       const fragment: Document = gql\`
         fragment Foo on FooType {
           id
@@ -342,40 +386,6 @@ describe('graphql-tag-pluck', () => {
     `))
 
     const gqlString = gqlPluck.fromFile.sync(file.name)
-
-    expect(gqlString).toEqual(freeText(`
-      fragment Foo on FooType {
-        id
-      }
-
-      query foo {
-        foo {
-          ...Foo
-        }
-      }
-    `))
-  })
-
-  it('should pluck graphql-tag template literals from code string synchronously', async () => {
-    const gqlString = gqlPluck.fromCodeString.sync(freeText(`
-      import gql from 'graphql-tag'
-
-      const fragment = gql(\`
-        fragment Foo on FooType {
-          id
-        }
-      \`)
-
-      const doc = gql\`
-        query foo {
-          foo {
-            ...Foo
-          }
-        }
-
-        \${fragment}
-      \`
-    `))
 
     expect(gqlString).toEqual(freeText(`
       fragment Foo on FooType {

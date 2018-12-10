@@ -1,20 +1,15 @@
-import {
-  transformFileAsync,
-  transformAsync,
-  transformFileSync,
-  transformSync,
-} from '@babel/core'
+import { parse as babelParse } from '@babel/parser'
+import babelTraverse from '@babel/traverse'
 import { resolve, extname } from 'path'
 import fs from './libs/fs'
-import pluckPlugin from './babel-plugin'
-import { merge } from './utils'
+import createVisitor from './visitor'
 
 const gqlExtensions = [
-  '.graphqls', '.graphql', '.gql'
+  '.graphqls', '.graphql', '.gqls', '.gql'
 ]
 
 const jsExtensions = [
-  '.js', '.jsx', '.ts', '.tsx'
+  '.js', '.jsx', '.ts', '.tsx', '.flow'
 ]
 
 const supportedExtensions = [...gqlExtensions, ...jsExtensions]
@@ -23,7 +18,7 @@ supportedExtensions.toString = function toString() {
   return this.split().join(', ')
 }
 
-export const gqlPluckFromFile = (filePath, customConfig = {}) => {
+export const gqlPluckFromFile = (filePath, options = {}) => {
   if (typeof filePath != 'string' && !(filePath instanceof String)) {
     throw TypeError('Provided file path must be a string')
   }
@@ -35,108 +30,81 @@ export const gqlPluckFromFile = (filePath, customConfig = {}) => {
   }
 
   if (gqlExtensions.includes(fileExt)) {
-    return fs.readFile(filePath, { encoding: 'utf-8' })
+    return fs.readFile(filePath, { encoding: 'utf8' })
   }
 
-  if (!(customConfig instanceof Object)) {
-    throw TypeError(`Provided config must be an object`)
+  if (!(options instanceof Object)) {
+    throw TypeError(`Options arg must be an object`)
   }
-
 
   filePath = resolve(process.cwd(), filePath)
+  options = { ...options, fileExt }
+  const config = new Config(options)
 
-  customConfig = createConfig(customConfig)
-  const sync = customConfig.sync
-  delete customConfig.sync
+  if (options.useSync) {
+    const code = fs.readFileSync(filePath, { encoding: 'utf8' })
 
-  if (sync) {
-    return transformFileSync(
-      filePath,
-      customConfig,
-    ).metadata.gqlString
+    return gqlPluckFromCodeString(code, config)
   }
-  else {
-    return transformFileAsync(
-      filePath,
-      customConfig,
-    ).then(({ metadata }) => metadata.gqlString)
-  }
+
+  return fs.readFile(filePath, { encoding: 'utf8' }).then((code) => {
+    return gqlPluckFromCodeString(code, config)
+  })
 }
 
-gqlPluckFromFile.sync = (filePath, customConfig = {}) => {
-  customConfig = { ...customConfig, sync: true }
+gqlPluckFromFile.sync = (filePath, options = {}) => {
+  options = { ...options, useSync: true }
 
-  return gqlPluckFromFile(filePath, customConfig)
+  return gqlPluckFromFile(filePath, options)
 }
 
-export const gqlPluckFromCodeString = (codeString, customConfig = {}) => {
+export const gqlPluckFromCodeString = (codeString, options = {}) => {
   if (typeof codeString != 'string' && !(codeString instanceof String)) {
     throw TypeError('Provided code must be a string')
   }
 
-  if (!(customConfig instanceof Object)) {
-    throw TypeError(`Provided config must be an object`)
+  if (!(options instanceof Object)) {
+    throw TypeError(`Options arg must be an object`)
   }
 
-  customConfig = createConfig({ filename: '.tsx', babelrc: false }, customConfig)
-  const sync = customConfig.sync
-  delete customConfig.sync
+  if (options.fileExt) {
+    if (gqlExtensions.includes(options.fileExt)) {
+      return codeString
+    }
 
-  if (sync) {
-    return transformSync(
-      codeString,
-      customConfig,
-    ).metadata.gqlString
+    if (!jsExtensions.includes(options.fileExt)) {
+      throw TypeError(`options.fileExt must be one of ${supportedExtensions}`)
+    }
+  }
+
+  const config = new Config(options)
+  const ast = babelParse(codeString, config)
+  const out = {}
+  const visitor = createVisitor(codeString, out)
+
+  babelTraverse(ast, visitor)
+
+  return out.returnValue
+}
+
+function Config(options) {
+  if (options instanceof Config) {
+    return options
+  }
+
+  const plugins = ['jsx']
+
+  if (options.fileExt == '.flow') {
+    plugins.push('flow', 'flowComments')
   }
   else {
-    return transformAsync(
-      codeString,
-      customConfig,
-    ).then(({ metadata }) => metadata.gqlString)
+    plugins.push('typescript')
   }
-}
 
-gqlPluckFromCodeString.sync = (codeString, customConfig = {}) => {
-  customConfig = { ...customConfig, sync: true }
-
-  return gqlPluckFromCodeString(codeString, customConfig)
-}
-
-const createConfig = (...customConfigs) => {
-  return merge({
-    plugins: [
-      pluckPlugin,
-
-      // Stage 0
-      require('@babel/plugin-proposal-function-bind'),
-
-      // Stage 1
-      require('@babel/plugin-proposal-export-default-from'),
-      require('@babel/plugin-proposal-logical-assignment-operators'),
-      [require('@babel/plugin-proposal-optional-chaining'), { 'loose': true }],
-      [require('@babel/plugin-proposal-pipeline-operator'), { 'proposal': 'minimal' }],
-      [require('@babel/plugin-proposal-nullish-coalescing-operator'), { 'loose': true }],
-      require('@babel/plugin-proposal-do-expressions'),
-
-      // Stage 2
-      [require('@babel/plugin-proposal-decorators'), { 'legacy': true }],
-      require('@babel/plugin-proposal-function-sent'),
-      require('@babel/plugin-proposal-export-namespace-from'),
-      require('@babel/plugin-proposal-numeric-separator'),
-      require('@babel/plugin-proposal-throw-expressions'),
-
-      // Stage 3
-      require('@babel/plugin-syntax-dynamic-import'),
-      require('@babel/plugin-syntax-import-meta'),
-      [require('@babel/plugin-proposal-class-properties'), { 'loose': true }],
-      require('@babel/plugin-proposal-json-strings'),
-    ],
-    presets: [
-      require('@babel/preset-typescript'),
-    ],
-    code: false,
-    ast: false,
-  }, ...customConfigs)
+  Object.assign(this, {
+    sourceType: 'module',
+    plugins,
+  })
 }
 
 export default {
