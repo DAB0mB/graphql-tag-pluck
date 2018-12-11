@@ -16,7 +16,7 @@ const jsExtensions = [
 const supportedExtensions = [...gqlExtensions, ...jsExtensions]
 
 supportedExtensions.toString = function toString() {
-  return this.split().join(', ')
+  return this.join(', ')
 }
 
 export const gqlPluckFromFile = (filePath, options = {}) => {
