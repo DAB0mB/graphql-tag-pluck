@@ -2,25 +2,14 @@ import * as t from '@babel/types'
 import { freeText } from './utils'
 
 const defaultGqlIdentifierName = 'gql'
-const gqlMagicCommentValue = 'graphql'
+const gqlMagicComment = 'graphql'
 const gqlPackName = 'graphql-tag'
 
-export default (code, comments, out) => {
+export default (code, out) => {
   // Will accumulate all template literals
   const gqlTemplateLiterals = []
   // By default, we will look for `gql` calls
   let gqlIdentifierName = defaultGqlIdentifierName
-
-  // /* GraphQL */
-  const gqlMagicComments = comments.filter(comment => {
-    if (comment.type == 'CommentBlock') {
-      const value = comment.value.toLowerCase().trim()
-
-      return value == gqlMagicCommentValue
-    }
-
-    return false
-  })
 
   const pluckStringFromFile = ({ start, end }) => {
     return freeText(code
@@ -30,6 +19,26 @@ export default (code, comments, out) => {
       // string anyways
       .replace(/\$\{[^}]*\}/g, '')
     )
+  }
+
+  // Push all template literals leaded by graphql magic comment
+  // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
+  const pluckMagicTemplateLiteral = (node) => {
+    const leadingComments = node.leadingComments
+
+    if (!leadingComments) return
+    if (!leadingComments.length) return
+
+    const leadingComment = leadingComments[leadingComments.length - 1]
+    const leadingCommentValue = leadingComment.value.trim().toLowerCase()
+
+    if (leadingCommentValue != gqlMagicComment) return
+
+    const gqlTemplateLiteral = pluckStringFromFile(node)
+
+    if (gqlTemplateLiteral) {
+      gqlTemplateLiterals.push(gqlTemplateLiteral)
+    }
   }
 
   return {
@@ -85,22 +94,19 @@ export default (code, comments, out) => {
       },
     },
 
-    TemplateLiteral: {
+    ExpressionStatement: {
       exit(path) {
         // Push all template literals leaded by graphql magic comment
         // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
-        const leadedByMagicComment = gqlMagicComments.some(comment =>
-          comment.end === path.node.start ||
-          comment.end === path.node.start - 1
-        )
+        if (!t.isTemplateLiteral(path.node.expression)) return
 
-        if (!leadedByMagicComment) return
+        pluckMagicTemplateLiteral(path.node)
+      },
+    },
 
-        const gqlTemplateLiteral = pluckStringFromFile(path.node)
-
-        if (gqlTemplateLiteral) {
-          gqlTemplateLiterals.push(gqlTemplateLiteral)
-        }
+    TemplateLiteral: {
+      exit(path) {
+        pluckMagicTemplateLiteral(path.node)
       },
     },
 
