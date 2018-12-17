@@ -1,7 +1,7 @@
 import * as t from '@babel/types'
 import { freeText } from './utils'
 
-export default (code, out) => {
+export default (code, out, comments = []) => {
   // Will accumulate all template literals
   const gqlTemplateLiterals = []
   // By default, we will look for `gql` calls
@@ -16,6 +16,16 @@ export default (code, out) => {
       .replace(/\$\{[^}]*\}/g, '')
     )
   }
+
+  const relevantComments = comments.filter(comment => {
+    if (comment.type === 'CommentBlock') {
+      const value = comment.value.toLowerCase().trim();
+
+      return value === 'graphql';
+    }
+
+    return false;
+  });
 
   return {
     CallExpression: {
@@ -68,6 +78,21 @@ export default (code, out) => {
 
         gqlIdentifierName = gqlImportSpecifier.local.name
       },
+    },
+
+    TemplateLiteral: {
+      exit(path) {
+        const hasMagicCommentBefore = 
+          !!relevantComments.find(comment => comment.end === path.node.start || comment.end === path.node.start - 1);
+
+        if (hasMagicCommentBefore) {
+          const gqlTemplateLiteral = pluckStringFromFile(path.node)
+
+          if (gqlTemplateLiteral) {
+            gqlTemplateLiterals.push(gqlTemplateLiteral)
+          }
+        }
+      }
     },
 
     TaggedTemplateExpression: {
