@@ -1,11 +1,26 @@
 import * as t from '@babel/types'
 import { freeText } from './utils'
 
-export default (code, out) => {
+const defaultGqlIdentifierName = 'gql'
+const gqlMagicCommentValue = 'graphql'
+const gqlPackName = 'graphql-tag'
+
+export default (code, comments, out) => {
   // Will accumulate all template literals
   const gqlTemplateLiterals = []
   // By default, we will look for `gql` calls
-  let gqlIdentifierName = 'gql'
+  let gqlIdentifierName = defaultGqlIdentifierName
+
+  // /* GraphQL */
+  const gqlMagicComments = comments.filter(comment => {
+    if (comment.type == 'CommentBlock') {
+      const value = comment.value.toLowerCase().trim()
+
+      return value == gqlMagicCommentValue
+    }
+
+    return false
+  })
 
   const pluckStringFromFile = ({ start, end }) => {
     return freeText(code
@@ -24,7 +39,7 @@ export default (code, out) => {
         // e.g. import gql from 'graphql-tag' -> gql
         if (
           path.node.callee.name == 'require' &&
-          path.node.arguments[0].value == 'graphql-tag'
+          path.node.arguments[0].value == gqlPackName
         ) {
           if (!t.isVariableDeclarator(path.parent)) return
           if (!t.isIdentifier(path.parent.id)) return
@@ -58,7 +73,7 @@ export default (code, out) => {
       enter(path) {
         // Find the identifier name used from graphql-tag, es6
         // e.g. import gql from 'graphql-tag' -> gql
-        if (path.node.source.value != 'graphql-tag') return
+        if (path.node.source.value != gqlPackName) return
 
         const gqlImportSpecifier = path.node.specifiers.find((importSpecifier) => {
           return t.isImportDefaultSpecifier(importSpecifier)
@@ -67,6 +82,25 @@ export default (code, out) => {
         if (!gqlImportSpecifier) return
 
         gqlIdentifierName = gqlImportSpecifier.local.name
+      },
+    },
+
+    TemplateLiteral: {
+      exit(path) {
+        // Push all template literals leaded by graphql magic comment
+        // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
+        const leadedByMagicComment = gqlMagicComments.some(comment =>
+          comment.end === path.node.start ||
+          comment.end === path.node.start - 1
+        )
+
+        if (!leadedByMagicComment) return
+
+        const gqlTemplateLiteral = pluckStringFromFile(path.node)
+
+        if (gqlTemplateLiteral) {
+          gqlTemplateLiterals.push(gqlTemplateLiteral)
+        }
       },
     },
 

@@ -81,7 +81,7 @@ export const gqlPluckFromCodeString = (codeString, options = {}) => {
   const out = {}
   const config = new Config(options)
   const ast = babelParse(codeString, config)
-  const visitor = createVisitor(codeString, out)
+  const visitor = createVisitor(codeString, ast.comments, out)
 
   babelTraverse(ast, visitor)
 

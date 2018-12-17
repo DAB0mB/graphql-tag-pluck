@@ -67,6 +67,18 @@ gqlPluck.fromCodeString(codeString, {
 })
 ```
 
+Template literals leaded by magic comments will also be extracted :-)
+
+```js
+/* GraphQL */ `
+  enum MessageTypes {
+    text
+    media
+    draftjs
+  }
+`
+```
+
 supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`,  `.graphqls`, `.graphql`, `.gqls`, `.gql`.
 
 ### License

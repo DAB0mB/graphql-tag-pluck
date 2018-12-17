@@ -271,6 +271,58 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  it('should pluck graphql-tag template literals leaded by a magic comment from .js file', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      const Message = /* GraphQL */ \`
+        enum MessageTypes {
+          text
+          media
+          draftjs
+        }\`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      enum MessageTypes {
+        text
+        media
+        draftjs
+      }
+    `))
+  })
+
+  it('should pluck graphql-tag template literals leaded by a lower cased non space separated magic comment from .js file', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      const Message = /* graphql */\`
+        enum MessageTypes {
+          text
+          media
+          draftjs
+        }\`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      enum MessageTypes {
+        text
+        media
+        draftjs
+      }
+    `))
+  })
+
   it(`should NOT pluck other template literals from a .js file`, async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
