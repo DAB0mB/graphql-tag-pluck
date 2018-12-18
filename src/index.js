@@ -1,6 +1,5 @@
-import { parse as babelParse } from '@babel/parser'
-import babelTraverse from '@babel/traverse'
 import Config from './config'
+import babel from './libs/babel'
 import fs from './libs/fs'
 import { resolve, extname } from './libs/path'
 import createVisitor from './visitor'
@@ -80,10 +79,10 @@ export const gqlPluckFromCodeString = (codeString, options = {}) => {
 
   const out = {}
   const config = new Config(options)
-  const ast = babelParse(codeString, config)
-  const visitor = createVisitor(codeString, out)
+  const ast = babel.parse(codeString, config)
+  const visitor = createVisitor(ast.code, out)
 
-  babelTraverse(ast, visitor)
+  babel.traverse(ast, visitor)
 
   return out.returnValue
 }

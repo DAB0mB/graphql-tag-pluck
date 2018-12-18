@@ -146,6 +146,58 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  it('should pluck graphql-tag template literals from .ts file with the same const inside namespace and outside namespace', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.ts',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import gql from 'graphql-tag';
+
+      namespace Foo {
+        export const foo = 12;
+
+        export const query = gql\`
+          query myQueryInNamespace {
+            fieldA
+          }
+        \`;
+      }
+
+      interface ModuleWithProviders {
+        ngModule: string;
+      }
+
+      export class FooModule {
+        static forRoot() {
+          return <ModuleWithProviders>{
+            ngModule: 'foo',
+            value: Foo.foo
+          };
+        }
+      }
+
+      export const query = gql\`
+        query myQuery {
+          fieldA
+        }
+      \`;
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      query myQueryInNamespace {
+        fieldA
+      }
+
+      query myQuery {
+        fieldA
+      }
+    `))
+  })
+
   it('should pluck graphql-tag template literals from .flow file', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
