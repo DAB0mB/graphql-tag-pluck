@@ -39,15 +39,16 @@ export const gqlPluckFromFile = (filePath, options = {}) => {
 
   filePath = resolve(process.cwd(), filePath)
   options = { ...options, fileExt }
-  const config = new Config(options)
 
   if (options.useSync) {
     const code = fs.readFileSync(filePath, { encoding: 'utf8' })
+    const config = new Config(code, options)
 
     return gqlPluckFromCodeString(code, config)
   }
 
   return fs.readFile(filePath, { encoding: 'utf8' }).then((code) => {
+    const config = new Config(code, options)
     return gqlPluckFromCodeString(code, config)
   })
 }
@@ -58,8 +59,8 @@ gqlPluckFromFile.sync = (filePath, options = {}) => {
   return gqlPluckFromFile(filePath, options)
 }
 
-export const gqlPluckFromCodeString = (codeString, options = {}) => {
-  if (typeof codeString != 'string' && !(codeString instanceof String)) {
+export const gqlPluckFromCodeString = (code, options = {}) => {
+  if (typeof code != 'string' && !(code instanceof String)) {
     throw TypeError('Provided code must be a string')
   }
 
@@ -69,7 +70,7 @@ export const gqlPluckFromCodeString = (codeString, options = {}) => {
 
   if (options.fileExt) {
     if (gqlExtensions.includes(options.fileExt)) {
-      return codeString
+      return code
     }
 
     if (!jsExtensions.includes(options.fileExt)) {
@@ -78,8 +79,8 @@ export const gqlPluckFromCodeString = (codeString, options = {}) => {
   }
 
   const out = {}
-  const config = new Config(options)
-  const ast = babel.parse(codeString, config)
+  const config = new Config(code, options)
+  const ast = babel.parse(code, config)
   const visitor = createVisitor(ast.code, out)
 
   babel.traverse(ast, visitor)

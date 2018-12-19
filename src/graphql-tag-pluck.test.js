@@ -290,6 +290,89 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  it('should pluck graphql-tag template literals from .js file with @flow header', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      // @flow
+
+      import gql from 'graphql-tag'
+      import { Document } from 'graphql'
+
+      const fragment: Document = gql\`
+        fragment Foo on FooType {
+          id
+        }
+      \`
+
+      const doc: Document = gql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
+
+  it('should NOT pluck graphql-tag template literals from .js file without a @flow header', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import gql from 'graphql-tag'
+      import { Document } from 'graphql'
+
+      const fragment: Document = gql\`
+        fragment Foo on FooType {
+          id
+        }
+      \`
+
+      const doc: Document = gql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const fail = Error('Function did not throw')
+
+    try {
+      await gqlPluck.fromFile(file.name)
+
+      throw fail
+    }
+    catch (e) {
+      expect(e).not.toEqual(fail)
+    }
+  })
+
   it('should pluck graphql-tag template literals from .flow.jsx file', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
