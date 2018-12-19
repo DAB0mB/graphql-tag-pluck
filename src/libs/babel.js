@@ -9,11 +9,14 @@ export const parse = (code, config) => {
   // even though it affects performance
   if (config.plugins.includes('typescript')) {
     code = ts.transpileModule(code, {
-      compilerOptions: { target: ts.ScriptTarget.ES2018 }
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2018,
+        jsx: config.plugins.includes('jsx'),
+      }
     }).outputText
 
     const plugins = config.plugins.slice()
-    const tsIndex = plugins.indexOf(tsIndex)
+    const tsIndex = plugins.indexOf('typescript')
     plugins.splice(tsIndex, 1)
 
     config = { ...config, plugins }
