@@ -723,4 +723,116 @@ describe('graphql-tag-pluck', () => {
       }
     `))
   })
+
+  it('should be able to specify the default GraphQL identifier name', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      const fragment = graphql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = graphql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name, {
+      defaultGqlIdentifierName: 'graphql'
+    })
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
+
+  it('should be able to specify the GraphQL magic comment to look for', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      const Message = /* GQL */ \`
+        enum MessageTypes {
+          text
+          media
+          draftjs
+        }\`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name, {
+      gqlMagicComment: 'GQL'
+    })
+
+    expect(gqlString).toEqual(freeText(`
+      enum MessageTypes {
+        text
+        media
+        draftjs
+      }
+    `))
+  })
+
+  it('should be able to specify the package name of which the GraphQL identifier should be imported from', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import mygql from 'my-graphql-tag'
+
+      const fragment = mygql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = mygql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name, {
+      gqlPackName: 'my-graphql-tag'
+    })
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
 })

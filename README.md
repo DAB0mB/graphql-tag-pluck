@@ -79,6 +79,16 @@ Template literals leaded by magic comments will also be extracted :-)
 `
 ```
 
+Transformation options may also be provided:
+
+- **`defaultGqlIdentifierName`** - The default GraphQL string parser identifier to look for. Defaults to `gql`, unless imported as something else from the `graphql-tag` package. This behavior can also be changed, see the `gqlPackName` option.
+
+- **`gqlMagicComment`** - The magic comment anchor to look for when parsing GraphQL strings. Defaults to `graphql`, which may be translated into `/* GraphQL */` in code.
+
+- **`gqlPackName`** - The name of the package that is responsible for exporting the GraphQL string parser function. Defaults to `graphql-tag`.
+
+I recommend you to look at the [source code](src/visitor.js) for a clearer understanding of the transformation options.
+
 supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`,  `.graphqls`, `.graphql`, `.gqls`, `.gql`.
 
 ### License

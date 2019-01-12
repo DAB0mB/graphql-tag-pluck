@@ -47,7 +47,10 @@ export default function Config(code, options) {
     default: plugins.push(...dynamicFlowPlugins); break
   }
 
-  Object.assign(this, {
+  // The _options filed will be used to retrieve the original options.
+  // Useful when we wanna get not config related options later on
+  return Object.assign(this, {
+    _options: options,
     sourceType: 'module',
     plugins,
   })

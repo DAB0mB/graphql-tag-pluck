@@ -1,11 +1,25 @@
 import * as t from '@babel/types'
 import { freeText } from './utils'
 
-const defaultGqlIdentifierName = 'gql'
-const gqlMagicComment = 'graphql'
-const gqlPackName = 'graphql-tag'
+const defaults = {
+  defaultGqlIdentifierName: 'gql',
+  gqlMagicComment: 'graphql',
+  gqlPackName: 'graphql-tag',
+}
 
-export default (code, out) => {
+export default (code, out, options = {}) => {
+  // Apply defaults to options
+  let {
+    defaultGqlIdentifierName,
+    gqlMagicComment,
+    gqlPackName,
+  } = { ...defaults, ...options }
+
+  // Prevent case related potential errors
+  defaultGqlIdentifierName = defaultGqlIdentifierName.toLowerCase()
+  gqlMagicComment = gqlMagicComment.toLowerCase()
+  gqlPackName = gqlPackName.toLowerCase()
+
   // Will accumulate all template literals
   const gqlTemplateLiterals = []
   // By default, we will look for `gql` calls
