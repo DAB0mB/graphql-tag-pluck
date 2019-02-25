@@ -4,7 +4,7 @@
 
 `graphql-tag-pluck` will take JavaScript code as an input and will pluck all template literals provided to `graphql-tag`.
 
-Input:
+**Input:**
 
 ```js
 import gql from 'graphql-tag'
@@ -26,7 +26,7 @@ const doc = gql`
 `
 ```
 
-Output:
+**Output:**
 
 ```graphql
 fragment Foo on FooType {
@@ -51,11 +51,14 @@ Originally created because of https://graphql-code-generator.com/.
 Once installed you can pluck GraphQL template literals using one of the following methods:
 
 ```js
-import gqlPluck, { gqlPluckFromFile, gqlPluckFromCodeString } from 'graphql-tag-pluck'
+import gqlPluck, {
+  gqlPluckFromFile,
+  gqlPluckFromCodeString,
+} from 'graphql-tag-pluck'
 
 // Returns promise
 gqlPluck.fromFile(filePath, {
-  useSync: true // Optional, will return string if so
+  useSync: true, // Optional, will return string if so
 })
 
 // Returns string
@@ -63,7 +66,7 @@ gqlPluck.fromFile.sync(filePath)
 
 // Returns string
 gqlPluck.fromCodeString(codeString, {
-  fileExt: '.ts' // Optional, defaults to '.js'
+  fileExt: '.ts', // Optional, defaults to '.js'
 })
 ```
 
@@ -79,17 +82,51 @@ Template literals leaded by magic comments will also be extracted :-)
 `
 ```
 
-Transformation options may also be provided:
+supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`, `.graphqls`, `.graphql`, `.gqls`, `.gql`.
 
-- **`defaultGqlIdentifierName`** - The default GraphQL string parser identifier to look for. Defaults to `gql`, unless imported as something else from the `graphql-tag` package. This behavior can also be changed, see the `gqlPackName` option.
-
-- **`gqlMagicComment`** - The magic comment anchor to look for when parsing GraphQL strings. Defaults to `graphql`, which may be translated into `/* GraphQL */` in code.
-
-- **`gqlPackName`** - The name of the package that is responsible for exporting the GraphQL string parser function. Defaults to `graphql-tag`.
+### Options
 
 I recommend you to look at the [source code](src/visitor.js) for a clearer understanding of the transformation options.
 
-supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`,  `.graphqls`, `.graphql`, `.gqls`, `.gql`.
+- **`gqlMagicComment`**
+
+  The magic comment anchor to look for when parsing GraphQL strings. Defaults to `graphql`, which may be translated into `/* GraphQL */` in code.
+
+- **`globalGqlIdentifierName`**
+
+  Allows to use a global identifier instead of a module import.
+
+  ```js
+  // `graphql` is a global function
+  export const usersQuery = graphql`
+    {
+      users {
+        id
+        name
+      }
+    }
+  `
+  ```
+
+-  **`modules`**
+
+    An array of packages that are responsible for exporting the GraphQL string parser function. By default it supports `graphql-tag` and `gatsby`.
+
+    ```js
+    {
+        modules: [
+            {
+                // import gql from 'graphql-tag'
+                name: 'graphql-tag',
+            },
+            {
+                // import { graphql } from 'gatsby'
+                name: 'gatsby',
+                identifier: 'graphql',
+            },
+        ]
+    }
+    ```
 
 ### License
 

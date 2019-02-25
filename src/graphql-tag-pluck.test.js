@@ -724,7 +724,7 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
-  it('should be able to specify the default GraphQL identifier name', async () => {
+  it('should be able to specify the global GraphQL identifier name', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
       template: '/tmp/tmp-XXXXXX.js',
@@ -749,7 +749,7 @@ describe('graphql-tag-pluck', () => {
     `))
 
     const gqlString = await gqlPluck.fromFile(file.name, {
-      defaultGqlIdentifierName: 'graphql'
+      globalGqlIdentifierName: 'graphql'
     })
 
     expect(gqlString).toEqual(freeText(`
@@ -820,8 +820,51 @@ describe('graphql-tag-pluck', () => {
     `))
 
     const gqlString = await gqlPluck.fromFile(file.name, {
-      gqlPackName: 'my-graphql-tag'
+      modules: [
+        { name: 'my-graphql-tag' }
+      ]
     })
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
+
+  it('should pluck graphql template literal from gatsby package', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import {graphql} from 'gatsby'
+
+      const fragment = graphql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = graphql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
 
     expect(gqlString).toEqual(freeText(`
       fragment Foo on FooType {

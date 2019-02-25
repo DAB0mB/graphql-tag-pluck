@@ -2,42 +2,72 @@ import * as t from '@babel/types'
 import { freeText } from './utils'
 
 const defaults = {
-  defaultGqlIdentifierName: 'gql',
+  modules: [
+    {
+      name: 'graphql-tag',
+    },
+    {
+      name: 'gatsby',
+      identifier: 'graphql',
+    },
+  ],
   gqlMagicComment: 'graphql',
-  gqlPackName: 'graphql-tag',
 }
 
 export default (code, out, options = {}) => {
   // Apply defaults to options
-  let {
-    defaultGqlIdentifierName,
-    gqlMagicComment,
-    gqlPackName,
-  } = { ...defaults, ...options }
+  let { modules, globalGqlIdentifierName, gqlMagicComment } = {
+    ...defaults,
+    ...options,
+  }
 
   // Prevent case related potential errors
-  defaultGqlIdentifierName = defaultGqlIdentifierName.toLowerCase()
   gqlMagicComment = gqlMagicComment.toLowerCase()
-  gqlPackName = gqlPackName.toLowerCase()
+  // normalize `name` and `identifier` values
+  modules = modules.map(mod => {
+    return {
+      name: mod.name.toLowerCase(),
+      identifier: mod.identifier && mod.identifier.toLowerCase(),
+    }
+  })
+  globalGqlIdentifierName = globalGqlIdentifierName && globalGqlIdentifierName.toLowerCase()
+
+  // Keep imported identifiers
+  // import gql from 'graphql-tag' -> gql
+  // import { graphql } from 'gatsby' -> graphql
+  // Will result with ['gql', 'graphql']
+  const definedIdentifierNames = []
 
   // Will accumulate all template literals
   const gqlTemplateLiterals = []
-  // By default, we will look for `gql` calls
-  let gqlIdentifierName = defaultGqlIdentifierName
+
+  // Check if package is registered
+  function isValidPackage(name) {
+    return modules.some(pkg => pkg.name === name)
+  }
+
+  // Check if identifier is defined and imported from registered packages
+  function isValidIdentifier(name) {
+    return (
+      definedIdentifierNames.some(id => id === name) ||
+      (globalGqlIdentifierName && name === globalGqlIdentifierName)
+    )
+  }
 
   const pluckStringFromFile = ({ start, end }) => {
-    return freeText(code
-      // Slice quotes
-      .slice(start + 1, end - 1)
-      // Erase string interpolations as we gonna export everything as a single
-      // string anyways
-      .replace(/\$\{[^}]*\}/g, '')
+    return freeText(
+      code
+        // Slice quotes
+        .slice(start + 1, end - 1)
+        // Erase string interpolations as we gonna export everything as a single
+        // string anyways
+        .replace(/\$\{[^}]*\}/g, '')
     )
   }
 
   // Push all template literals leaded by graphql magic comment
   // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
-  const pluckMagicTemplateLiteral = (node) => {
+  const pluckMagicTemplateLiteral = node => {
     const leadingComments = node.leadingComments
 
     if (!leadingComments) return
@@ -60,14 +90,11 @@ export default (code, out, options = {}) => {
       enter(path) {
         // Find the identifier name used from graphql-tag, commonJS
         // e.g. import gql from 'graphql-tag' -> gql
-        if (
-          path.node.callee.name == 'require' &&
-          path.node.arguments[0].value == gqlPackName
-        ) {
+        if (path.node.callee.name == 'require' && isValidPackage(path.node.arguments[0].value)) {
           if (!t.isVariableDeclarator(path.parent)) return
           if (!t.isIdentifier(path.parent.id)) return
 
-          gqlIdentifierName = path.parent.id.name
+          definedIdentifierNames.push(path.parent.id.name)
 
           return
         }
@@ -78,7 +105,7 @@ export default (code, out, options = {}) => {
         // e.g. gql(`query myQuery {}`) -> query myQuery {}
         if (
           t.isIdentifier(path.node.callee) &&
-          path.node.callee.name == gqlIdentifierName &&
+          isValidIdentifier(path.node.callee.name) &&
           t.isTemplateLiteral(arg0)
         ) {
           const gqlTemplateLiteral = pluckStringFromFile(arg0)
@@ -96,15 +123,30 @@ export default (code, out, options = {}) => {
       enter(path) {
         // Find the identifier name used from graphql-tag, es6
         // e.g. import gql from 'graphql-tag' -> gql
-        if (path.node.source.value != gqlPackName) return
+        if (!isValidPackage(path.node.source.value)) return
 
-        const gqlImportSpecifier = path.node.specifiers.find((importSpecifier) => {
-          return t.isImportDefaultSpecifier(importSpecifier)
+        const moduleNode = modules.find(pkg => pkg.name === path.node.source.value)
+
+        const gqlImportSpecifier = path.node.specifiers.find(importSpecifier => {
+          // When it's a default import and registered package has no named identifier
+          if (t.isImportDefaultSpecifier(importSpecifier) && !moduleNode.identifier) {
+            return true
+          }
+
+          // When it's a named import that matches registered package's identifier
+          if (
+            t.isImportSpecifier(importSpecifier) &&
+            importSpecifier.imported.name === moduleNode.identifier
+          ) {
+            return true
+          }
+
+          return false
         })
 
         if (!gqlImportSpecifier) return
 
-        gqlIdentifierName = gqlImportSpecifier.local.name
+        definedIdentifierNames.push(gqlImportSpecifier.local.name)
       },
     },
 
@@ -128,10 +170,7 @@ export default (code, out, options = {}) => {
       exit(path) {
         // Push all template literals provided to the found identifier name
         // e.g. gql `query myQuery {}` -> query myQuery {}
-        if (
-          !t.isIdentifier(path.node.tag) ||
-          path.node.tag.name != gqlIdentifierName
-        ) {
+        if (!t.isIdentifier(path.node.tag) || !isValidIdentifier(path.node.tag.name)) {
           return
         }
 
