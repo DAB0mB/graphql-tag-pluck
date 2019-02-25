@@ -724,7 +724,7 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
-  it('should be able to specify the default GraphQL identifier name', async () => {
+  it('should be able to specify the global GraphQL identifier name', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
       template: '/tmp/tmp-XXXXXX.js',
@@ -749,7 +749,7 @@ describe('graphql-tag-pluck', () => {
     `))
 
     const gqlString = await gqlPluck.fromFile(file.name, {
-      defaultGqlIdentifierName: 'graphql'
+      globalGqlIdentifierName: 'graphql'
     })
 
     expect(gqlString).toEqual(freeText(`
@@ -820,7 +820,9 @@ describe('graphql-tag-pluck', () => {
     `))
 
     const gqlString = await gqlPluck.fromFile(file.name, {
-      gqlPackName: 'my-graphql-tag'
+      modules: [{
+        name: 'my-graphql-tag'
+      }]
     })
 
     expect(gqlString).toEqual(freeText(`
@@ -862,10 +864,7 @@ describe('graphql-tag-pluck', () => {
       \`
     `))
 
-    const gqlString = await gqlPluck.fromFile(file.name, {
-      defaultGqlIdentifierName: 'graphql',
-      gqlPackName: 'gatsby'
-    })
+    const gqlString = await gqlPluck.fromFile(file.name)
 
     expect(gqlString).toEqual(freeText(`
       fragment Foo on FooType {
