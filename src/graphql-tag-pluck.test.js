@@ -835,4 +835,48 @@ describe('graphql-tag-pluck', () => {
       }
     `))
   })
+
+  it('should pluck graphql template literal from gatsby package', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import {graphql} from 'gatsby'
+
+      const fragment = graphql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = graphql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name, {
+      defaultGqlIdentifierName: 'graphql',
+      gqlPackName: 'gatsby'
+    })
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
 })
