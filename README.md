@@ -7,13 +7,13 @@
 Input:
 
 ```js
-import gql from 'graphql-tag'
+import gql from 'graphql-tag';
 
 const fragment = gql`
   fragment Foo on FooType {
     id
   }
-`
+`;
 
 const doc = gql`
   query foo {
@@ -23,7 +23,7 @@ const doc = gql`
   }
 
   ${fragment}
-`
+`;
 ```
 
 Output:
@@ -51,20 +51,23 @@ Originally created because of https://graphql-code-generator.com/.
 Once installed you can pluck GraphQL template literals using one of the following methods:
 
 ```js
-import gqlPluck, { gqlPluckFromFile, gqlPluckFromCodeString } from 'graphql-tag-pluck'
+import gqlPluck, {
+  gqlPluckFromFile,
+  gqlPluckFromCodeString,
+} from 'graphql-tag-pluck';
 
 // Returns promise
 gqlPluck.fromFile(filePath, {
-  useSync: true // Optional, will return string if so
-})
+  useSync: true, // Optional, will return string if so
+});
 
 // Returns string
-gqlPluck.fromFile.sync(filePath)
+gqlPluck.fromFile.sync(filePath);
 
 // Returns string
 gqlPluck.fromCodeString(codeString, {
-  fileExt: '.ts' // Optional, defaults to '.js'
-})
+  fileExt: '.ts', // Optional, defaults to '.js'
+});
 ```
 
 Template literals leaded by magic comments will also be extracted :-)
@@ -76,20 +79,62 @@ Template literals leaded by magic comments will also be extracted :-)
     media
     draftjs
   }
+`;
+```
+
+#### Transformation options may also be provided
+
+#### `gqlMagicComment`
+
+The magic comment anchor to look for when parsing GraphQL strings. Defaults to `graphql`, which may be translated into `/* GraphQL */` in code.
+
+#### `globalGqlIdentifierName`
+
+Allows to use a global identifier instead of one imported from a module.
+
+```js
+// `graphql` is a globally available function
+export const usersQuery = graphql`
+  {
+    users {
+      id
+      name
+    }
+  }
 `
 ```
 
-Transformation options may also be provided:
+#### `modules`
 
-- **`defaultGqlIdentifierName`** - The default GraphQL string parser identifier to look for. Defaults to `gql`, unless imported as something else from the `graphql-tag` package. This behavior can also be changed, see the `gqlPackName` option.
+An array of packages that are responsible for exporting the GraphQL string parser function. By default it supports `graphql-tag` and `gatsby`.
 
-- **`gqlMagicComment`** - The magic comment anchor to look for when parsing GraphQL strings. Defaults to `graphql`, which may be translated into `/* GraphQL */` in code.
+- **`name`** - The name of the package
 
-- **`gqlPackName`** - The name of the package that is responsible for exporting the GraphQL string parser function. Defaults to `graphql-tag`.
+- **`identifier`** - The GraphQL string parser identifier to look for. Uses default export if identifier is not defined.
+
+Default settings:
+
+```js
+{
+  modules: [
+    {
+      // uses a default export
+      // import gql from 'graphql-tag'
+      name: 'graphql-tag',
+    },
+    {
+      // uses named export
+      // import { graphql } from 'gatsby'
+      name: 'gatsby',
+      identifier: 'graphql',
+    },
+  ];
+}
+```
 
 I recommend you to look at the [source code](src/visitor.js) for a clearer understanding of the transformation options.
 
-supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`,  `.graphqls`, `.graphql`, `.gqls`, `.gql`.
+supported file extensions are: `.js`, `.jsx`, `.ts`, `.tsx`, `.flow`, `.flow.js`, `.flow.jsx`, `.graphqls`, `.graphql`, `.gqls`, `.gql`.
 
 ### License
 
