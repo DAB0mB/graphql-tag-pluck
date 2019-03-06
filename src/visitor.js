@@ -10,6 +10,10 @@ const defaults = {
       name: 'gatsby',
       identifier: 'graphql',
     },
+    {
+      name: 'apollo-server-express',
+      identifier: 'gql'
+    },
   ],
   gqlMagicComment: 'graphql',
 }

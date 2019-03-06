@@ -878,4 +878,45 @@ describe('graphql-tag-pluck', () => {
       }
     `))
   })
+
+  it('should pluck gql template literal from apollo-server-express package', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import { gql } from 'apollo-server-express'
+
+      const fragment = gql(\`
+        fragment Foo on FooType {
+          id
+        }
+      \`)
+
+      const doc = gql\`
+        query foo {
+          foo {
+            ...Foo
+          }
+        }
+
+        \${fragment}
+      \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      fragment Foo on FooType {
+        id
+      }
+
+      query foo {
+        foo {
+          ...Foo
+        }
+      }
+    `))
+  })
 })
