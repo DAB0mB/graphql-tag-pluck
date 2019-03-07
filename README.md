@@ -110,7 +110,7 @@ I recommend you to look at the [source code](src/visitor.js) for a clearer under
 
 -  **`modules`**
 
-    An array of packages that are responsible for exporting the GraphQL string parser function. By default it supports `graphql-tag` and `gatsby`.
+    An array of packages that are responsible for exporting the GraphQL string parser function. By default it supports `graphql-tag`, `gatsby` and `apollo-server-express`.
 
     ```js
     {
@@ -123,6 +123,11 @@ I recommend you to look at the [source code](src/visitor.js) for a clearer under
                 // import { graphql } from 'gatsby'
                 name: 'gatsby',
                 identifier: 'graphql',
+            },
+            {
+                // import { gql } from 'apollo-server-express'
+                name: 'apollo-server-express',
+                identifier: 'gql',
             },
         ]
     }
