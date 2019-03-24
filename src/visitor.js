@@ -14,6 +14,10 @@ const defaults = {
       name: 'apollo-server-express',
       identifier: 'gql'
     },
+    {
+      name: 'react-relay',
+      identifier: 'graphql'
+    }
   ],
   gqlMagicComment: 'graphql',
 }
