@@ -110,25 +110,71 @@ I recommend you to look at the [source code](src/visitor.js) for a clearer under
 
 -  **`modules`**
 
-    An array of packages that are responsible for exporting the GraphQL string parser function. By default it supports `graphql-tag`, `gatsby` and `apollo-server-express`.
+    An array of packages that are responsible for exporting the GraphQL string parser function. The following modules are supported by default:
 
     ```js
     {
         modules: [
             {
-                // import gql from 'graphql-tag'
-                name: 'graphql-tag',
+              // import gql from 'graphql-tag'
+              name: 'graphql-tag',
             },
             {
-                // import { graphql } from 'gatsby'
-                name: 'gatsby',
-                identifier: 'graphql',
+              name: 'graphql-tag.macro',
             },
             {
-                // import { gql } from 'apollo-server-express'
-                name: 'apollo-server-express',
-                identifier: 'gql',
+              // import { graphql } from 'gatsby'
+              name: 'gatsby',
+              identifier: 'graphql',
             },
+            {
+              name: 'apollo-server-express',
+              identifier: 'gql'
+            },
+            {
+              name: 'apollo-server',
+              identifier: 'gql'
+            },
+            {
+              name: 'react-relay',
+              identifier: 'graphql'
+            },
+            {
+              name: 'apollo-boost',
+              identifier: 'gql'
+            },
+            {
+              name: 'apollo-server-koa',
+              identifier: 'gql',
+            },
+            {
+              name: 'apollo-server-hapi',
+              identifier: 'gql',
+            },
+            {
+              name: 'apollo-server-fastify',
+              identifier: 'gql',
+            },
+            {
+              name: ' apollo-server-lambda',
+              identifier: 'gql',
+            },
+            {
+              name: 'apollo-server-micro',
+              identifier: 'gql',
+            },
+            {
+              name: 'apollo-server-azure-functions',
+              identifier: 'gql',
+            },
+            {
+              name: 'apollo-server-cloud-functions',
+              identifier: 'gql',
+            },
+            {
+              name: 'apollo-server-cloudflare',
+              identifier: 'gql',
+            }
         ]
     }
     ```
