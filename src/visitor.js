@@ -7,6 +7,9 @@ const defaults = {
       name: 'graphql-tag',
     },
     {
+      name: 'graphql-tag.macro',
+    },
+    {
       name: 'gatsby',
       identifier: 'graphql',
     },
@@ -15,8 +18,48 @@ const defaults = {
       identifier: 'gql'
     },
     {
+      name: 'apollo-server',
+      identifier: 'gql'
+    },
+    {
       name: 'react-relay',
       identifier: 'graphql'
+    },
+    {
+      name: 'apollo-boost',
+      identifier: 'gql'
+    },
+    {
+      name: 'apollo-server-koa',
+      identifier: 'gql',
+    },
+    {
+      name: 'apollo-server-hapi',
+      identifier: 'gql',
+    },
+    {
+      name: 'apollo-server-fastify',
+      identifier: 'gql',
+    },
+    {
+      name: ' apollo-server-lambda',
+      identifier: 'gql',
+    },
+    {
+      name: 'apollo-server-micro',
+      identifier: 'gql',
+    },
+    {
+      name: 'apollo-server-azure-functions',
+      identifier: 'gql',
+    },
+    {
+      name: 'apollo-server-cloud-functions',
+      identifier: 'gql',
+    },
+    {
+      name: 'apollo-server-cloudflare',
+      identifier: 'gql',
     }
   ],
   gqlMagicComment: 'graphql',
