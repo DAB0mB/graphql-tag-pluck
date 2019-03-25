@@ -31,35 +31,35 @@ const defaults = {
     },
     {
       name: 'apollo-server-koa',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: 'apollo-server-hapi',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: 'apollo-server-fastify',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: ' apollo-server-lambda',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: 'apollo-server-micro',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: 'apollo-server-azure-functions',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: 'apollo-server-cloud-functions',
-      identifier: 'gql'`,
+      identifier: 'gql',
     },
     {
       name: 'apollo-server-cloudflare',
-      identifier: 'gql'`,
+      identifier: 'gql',
     }
   ],
   gqlMagicComment: 'graphql',
