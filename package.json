@@ -7,7 +7,7 @@
   "main": "build/graphql-tag-pluck.js",
   "scripts": {
     "build": "webpack --config webpack_config.js",
-    "test": "npm run build && jest",
+    "test": "npm run build && jest --verbose",
     "prepublish": "npm run build"
   },
   "dependencies": {

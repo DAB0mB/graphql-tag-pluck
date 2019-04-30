@@ -22,6 +22,7 @@ export const parse = (code, config) => {
     config = { ...config, plugins }
   }
 
+  console.log(ts.version)
   const ast = babelParse(code, config)
   // Necessary to get the original code in case it was transformed by TypeScript
   ast.code = code
