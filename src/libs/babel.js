@@ -11,7 +11,9 @@ export const parse = (code, config) => {
     code = ts.transpileModule(code, {
       compilerOptions: {
         target: ts.ScriptTarget.ES2018,
-        jsx: config.plugins.includes('jsx'),
+        // "preserve" mode would be more correct, but it will keep not transpile generic
+        // React.Components which are provided with null or undefined e.g. <Foo<undefined />>
+        jsx: config.plugins.includes('jsx') && 'react',
       }
     }).outputText
 

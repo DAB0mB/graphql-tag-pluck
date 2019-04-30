@@ -196,6 +196,53 @@ describe('graphql-tag-pluck', () => {
     `))
   })
 
+  it('should pluck graphql-tag template literals from .tsx file with generic jsx elements', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.tsx',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+      import * as React from 'react';
+      import gql from 'graphql-tag';
+      import Generic from './Generic'
+
+      export default class extends React.Component<{}, {}> {
+        public render() {
+          return (
+            <div>
+              <Generic<string, number> />
+              <Generic<undefined> />
+              <Generic<null> />
+            </div>
+          )
+        }
+      }
+
+      export const pageQuery = gql\`
+        query IndexQuery {
+          site {
+            siteMetadata {
+              title
+            }
+          }
+        }
+      \`;
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+      query IndexQuery {
+        site {
+          siteMetadata {
+            title
+          }
+        }
+      }
+    `))
+  })
+
   it('should pluck graphql-tag template literals from .ts file with the same const inside namespace and outside namespace', async () => {
     const file = await tmp.file({
       unsafeCleanup: true,
