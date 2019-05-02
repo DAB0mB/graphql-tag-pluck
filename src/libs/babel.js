@@ -1,6 +1,6 @@
 import { parse as babelParse } from '@babel/parser'
 import babelTraverse from '@babel/traverse'
-import * as ts from 'typescript'
+import { freeText } from '../utils'
 
 export const traverse = babelTraverse
 
@@ -8,6 +8,25 @@ export const parse = (code, config) => {
   // The 'typescript' plug-in has few bugs... It's just better to use the native one
   // even though it affects performance
   if (config.plugins.includes('typescript')) {
+    let ts
+    try {
+      ts = require('typescript')
+    }
+    catch (e) {
+      throw Error(freeText(`
+        GraphQL template literals cannot be plucked from a TypeScript code without having the "typescript" package installed.
+        Please install it and try again.
+
+        Via NPM:
+
+            $ npm install typescript
+
+        Via Yarn:
+
+            $ yarn add typescript
+      `))
+    }
+
     code = ts.transpileModule(code, {
       compilerOptions: {
         target: ts.ScriptTarget.ES2018,

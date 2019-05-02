@@ -14,8 +14,7 @@
     "@babel/parser": "^7.4.4",
     "@babel/traverse": "^7.4.4",
     "@babel/types": "^7.4.4",
-    "source-map-support": "^0.5.12",
-    "typescript": "^3.4.5"
+    "source-map-support": "^0.5.12"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
@@ -39,6 +38,7 @@
     "eslint": "^5.16.0",
     "eslint-loader": "^2.1.2",
     "jest": "^24.7.1",
+    "typescript": "^3.4.5",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.1",
     "webpack-node-externals": "^1.7.2"
