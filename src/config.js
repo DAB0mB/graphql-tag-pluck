@@ -40,11 +40,15 @@ export default function Config(code, options) {
   switch (options.fileExt) {
     case '.ts': plugins.push('typescript'); break
     case '.tsx': plugins.push('typescript', 'jsx'); break
+    // Adding .jsx extension by default because it doesn't affect other syntax features
+    // (unlike .tsx) and because people are seem to use it with regular file extensions
+    // (e.g. .js) see https://github.com/dotansimha/graphql-code-generator/issues/1967
+    case '.js': plugins.push('jsx', ...dynamicFlowPlugins); break
     case '.jsx': plugins.push('jsx', ...dynamicFlowPlugins); break
-    case '.flow.js': plugins.push(...flowPlugins); break
+    case '.flow.js': plugins.push('jsx', ...flowPlugins); break
     case '.flow.jsx': plugins.push('jsx', ...flowPlugins); break
-    case '.flow': plugins.push(...flowPlugins); break
-    default: plugins.push(...dynamicFlowPlugins); break
+    case '.flow': plugins.push('jsx', ...flowPlugins); break
+    default: plugins.push('jsx', ...dynamicFlowPlugins); break
   }
 
   // The _options filed will be used to retrieve the original options.
