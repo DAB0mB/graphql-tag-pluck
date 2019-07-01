@@ -7,8 +7,9 @@
   "main": "build/graphql-tag-pluck.js",
   "scripts": {
     "build": "webpack --config webpack_config.js",
-    "test": "npm run build && jest",
-    "prepublish": "npm run build"
+    "test": "npm run build && jest --forceExit && yarn bundlesize",
+    "prepublish": "npm run build",
+    "bundlesize": "cd bundle-test && yarn && yarn test"
   },
   "dependencies": {
     "@babel/parser": "^7.4.4",
