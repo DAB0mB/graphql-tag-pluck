@@ -7,8 +7,11 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'graphql-tag-pluck': path.join(__dirname, '../build/graphql-tag-pluck.js'),
+      'graphql-tag-pluck': path.join(__dirname, '../src/index.js'),
     },
     modules: ['node_modules', '../node_modules'],
   },
+  externals: {
+    'typescript': 'require("typescript")'
+  }
 };
