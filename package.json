@@ -5,6 +5,9 @@
   "license": "MIT",
   "repository": "https://github.com/DAB0mB/graphql-tag-pluck.git",
   "main": "build/graphql-tag-pluck.js",
+  "module": "src/index.js",
+  "typings": "index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "build": "webpack --config webpack_config.js",
     "test": "npm run build && jest --forceExit && yarn bundlesize",
