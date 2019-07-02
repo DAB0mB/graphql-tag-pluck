@@ -966,4 +966,9 @@ describe('graphql-tag-pluck', () => {
       }
     `))
   })
+
+  it('should pluck magic comment template literals with a trailing semicolon', async () => {
+    const gqlString = await gqlPluck.fromCodeString("/* GraphQL */ `{}`;")
+    expect(gqlString).toEqual("{}")
+  })
 })

@@ -118,7 +118,7 @@ export default (code, out, options = {}) => {
 
   // Push all template literals leaded by graphql magic comment
   // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
-  const pluckMagicTemplateLiteral = node => {
+  const pluckMagicTemplateLiteral = (node, takeExpression) => {
     const leadingComments = node.leadingComments
 
     if (!leadingComments) return
@@ -129,7 +129,7 @@ export default (code, out, options = {}) => {
 
     if (leadingCommentValue != gqlMagicComment) return
 
-    const gqlTemplateLiteral = pluckStringFromFile(node)
+    const gqlTemplateLiteral = pluckStringFromFile(takeExpression ? node.expression : node)
 
     if (gqlTemplateLiteral) {
       gqlTemplateLiterals.push(gqlTemplateLiteral)
@@ -205,9 +205,10 @@ export default (code, out, options = {}) => {
       exit(path) {
         // Push all template literals leaded by graphql magic comment
         // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
+
         if (!t.isTemplateLiteral(path.node.expression)) return
 
-        pluckMagicTemplateLiteral(path.node)
+        pluckMagicTemplateLiteral(path.node, true)
       },
     },
 
