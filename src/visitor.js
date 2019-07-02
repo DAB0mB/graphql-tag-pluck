@@ -105,15 +105,6 @@ export default (code, out, options = {}) => {
     )
   }
 
-  function isValidMagicComment(leadingComments) {
-    if (!leadingComments || !leadingComments.length) return false
-
-    const leadingComment = leadingComments[leadingComments.length - 1]
-    const leadingCommentValue = leadingComment.value.trim().toLowerCase()
-
-    return leadingCommentValue == gqlMagicComment
-  }
-
   const pluckStringFromFile = ({ start, end }) => {
     return freeText(
       code
@@ -123,6 +114,26 @@ export default (code, out, options = {}) => {
         // string anyways
         .replace(/\$\{[^}]*\}/g, '')
     )
+  }
+
+  // Push all template literals leaded by graphql magic comment
+  // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
+  const pluckMagicTemplateLiteral = (node, takeExpression) => {
+    const leadingComments = node.leadingComments
+
+    if (!leadingComments) return
+    if (!leadingComments.length) return
+
+    const leadingComment = leadingComments[leadingComments.length - 1]
+    const leadingCommentValue = leadingComment.value.trim().toLowerCase()
+
+    if (leadingCommentValue != gqlMagicComment) return
+
+    const gqlTemplateLiteral = pluckStringFromFile(takeExpression ? node.expression : node)
+
+    if (gqlTemplateLiteral) {
+      gqlTemplateLiterals.push(gqlTemplateLiteral)
+    }
   }
 
   return {
@@ -195,26 +206,15 @@ export default (code, out, options = {}) => {
         // Push all template literals leaded by graphql magic comment
         // e.g. /* GraphQL */ `query myQuery {}` -> query myQuery {}
 
-        if (!isValidMagicComment(path.node.leadingComments)) return
         if (!t.isTemplateLiteral(path.node.expression)) return
 
-        const gqlTemplateLiteral = pluckStringFromFile(path.node.expression)
-
-        if (gqlTemplateLiteral) {
-          gqlTemplateLiterals.push(gqlTemplateLiteral)
-        }
+        pluckMagicTemplateLiteral(path.node, true)
       },
     },
 
     TemplateLiteral: {
       exit(path) {
-        if (!isValidMagicComment(path.node.leadingComments)) return
-
-        const gqlTemplateLiteral = pluckStringFromFile(path.node)
-
-        if (gqlTemplateLiteral) {
-          gqlTemplateLiterals.push(gqlTemplateLiteral)
-        }
+        pluckMagicTemplateLiteral(path.node)
       },
     },
 
