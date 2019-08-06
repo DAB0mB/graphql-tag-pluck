@@ -113,6 +113,7 @@ export default (code, out, options = {}) => {
         // Erase string interpolations as we gonna export everything as a single
         // string anyways
         .replace(/\$\{[^}]*\}/g, '')
+        .split('\\`').join('`')
     )
   }
 
