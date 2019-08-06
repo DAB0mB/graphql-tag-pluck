@@ -971,4 +971,35 @@ describe('graphql-tag-pluck', () => {
     const gqlString = await gqlPluck.fromCodeString("/* GraphQL */ `{}`;")
     expect(gqlString).toEqual("{}")
   })
+
+  it('should pluck with comments having escaped backticks', async () => {
+    const file = await tmp.file({
+      unsafeCleanup: true,
+      template: '/tmp/tmp-XXXXXX.js',
+    })
+
+    await fs.writeFile(file.name, freeText(`
+    import gql from 'graphql-tag';
+
+    export default gql\`
+      type User { 
+        id: ID! 
+        "Choose a nice username, so users can \\\`@mention\\\` you."
+        username: String! 
+        email: String! 
+      } 
+    \`
+    `))
+
+    const gqlString = await gqlPluck.fromFile(file.name)
+
+    expect(gqlString).toEqual(freeText(`
+        type User { 
+          id: ID! 
+          "Choose a nice username, so users can \`@mention\` you."
+          username: String! 
+          email: String! 
+        }
+    `))
+  })
 })
