@@ -77,7 +77,7 @@ export default (code, out, options = {}) => {
   // normalize `name` and `identifier` values
   modules = modules.map(mod => {
     return {
-      name: mod.name.toLowerCase(),
+      name: mod.name,
       identifier: mod.identifier && mod.identifier.toLowerCase(),
     }
   })
@@ -94,7 +94,7 @@ export default (code, out, options = {}) => {
 
   // Check if package is registered
   function isValidPackage(name) {
-    return modules.some(pkg => pkg.name === name)
+    return modules.some(pkg => pkg.name && name && pkg.name.toLowerCase() === name.toLowerCase())
   }
 
   // Check if identifier is defined and imported from registered packages
@@ -177,7 +177,7 @@ export default (code, out, options = {}) => {
         // e.g. import gql from 'graphql-tag' -> gql
         if (!isValidPackage(path.node.source.value)) return
 
-        const moduleNode = modules.find(pkg => pkg.name === path.node.source.value)
+        const moduleNode = modules.find(pkg => pkg.name.toLowerCase() === path.node.source.value.toLowerCase())
 
         const gqlImportSpecifier = path.node.specifiers.find(importSpecifier => {
           // When it's a default import and registered package has no named identifier
