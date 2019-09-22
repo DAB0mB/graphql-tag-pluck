@@ -57,5 +57,6 @@ export default function Config(code, options) {
     _options: options,
     sourceType: 'module',
     plugins,
+    allowUndeclaredExports: true,
   })
 }
