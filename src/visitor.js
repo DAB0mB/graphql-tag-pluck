@@ -60,7 +60,11 @@ const defaults = {
     {
       name: 'apollo-server-cloudflare',
       identifier: 'gql',
-    }
+    },
+    {
+      name: 'graphql.macro',
+      identifier: 'gql',
+    },
   ],
   gqlMagicComment: 'graphql',
 }
