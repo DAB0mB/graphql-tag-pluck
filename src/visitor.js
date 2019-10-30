@@ -22,6 +22,10 @@ const defaults = {
       identifier: 'gql'
     },
     {
+      name: '@apollo/client',
+      identifier: 'gql'
+    },
+    {
       name: 'react-relay',
       identifier: 'graphql'
     },
