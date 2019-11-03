@@ -10,6 +10,10 @@ const defaults = {
       name: 'graphql-tag.macro',
     },
     {
+      name: 'gql',
+      identifier: '@apollo/client',
+    },
+    {
       name: 'gatsby',
       identifier: 'graphql',
     },
