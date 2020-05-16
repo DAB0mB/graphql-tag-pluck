@@ -39,7 +39,7 @@
     "babel-loader": "^8.0.5",
     "babel-polyfill": "^6.26.0",
     "enzyme": "^3.9.0",
-    "eslint": "^6.0.0",
+    "eslint": "^7.0.0",
     "eslint-loader": "^3.0.0",
     "jest": "^24.7.1",
     "typescript": "^3.4.5",
